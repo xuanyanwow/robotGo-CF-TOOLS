@@ -1,4 +1,4 @@
-# RobotGo-CF-TOOLS
+# RobotGo-FPS-TOOLS
 
 游戏的辅助脚本
 

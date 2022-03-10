@@ -3,65 +3,52 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/go-vgo/robotgo"
 	hook "github.com/robotn/gohook"
-	"math/rand"
+	"robotTest/fps"
 )
-
-var maxShut = flag.Int("maxShut", 4, "最大连发")
-var minShut = flag.Int("minShut", 3, "最小连发")
-var maxSleep = flag.Int("maxSleep", 80, "最大延迟")
-var minSleep = flag.Int("minSleep", 120, "最小延迟.")
 
 func main() {
 	flag.Parse()
+	fmt.Println("--- USP连点【/】 ---")
+	fmt.Println("--- M4远距连点【*】 ---")
+	fmt.Println("--- 加特林连点【-】 ---")
+	fmt.Println("--- 自动瞄准【+】 ---")
+	fmt.Println("===============请勿用于游戏作弊，否则责任自行承担===============")
 
-	fmt.Println("--- 当切换为副武器(按下2时) 开启功能 ---\n--- 切换主武器/近战武器(按下1/3时) 关闭功能 ---")
-
-	// TODO 打印参数
-
-	can := false
 	evChan := hook.Start()
 	defer hook.End()
 
+	fpsSubject := fps.FSubject{
+		Title: "fps辅助",
+		L:     map[string]fps.Observer{},
+	}
+	// 强制开启的观察者可以提前挂载
+
 	for ev := range evChan {
+		needSend := true
+		// 自己监听 注册和删除监听者
 		if ev.Kind == hook.KeyDown {
 			switch hook.RawcodetoKeychar(ev.Rawcode) {
-			case "1","3":
-				can = false
-				fmt.Println("关闭连发")
+			case "/":
+				needSend = false
+				fpsSubject.Toggle(fps.NewUspObserver())
 				break
-			case "2":
-				fmt.Println("开启连发")
-				can = true
+			case "*":
+				needSend = false
+				fpsSubject.Toggle(&fps.M4Observer{})
+				break
+			case "-":
+				needSend = false
+				break
+			case "+":
+				needSend = false
 				break
 			}
 		}
-		if ev.Kind == hook.MouseDown && ev.Button == 2 {
-			if !can {
-				return
-			}
-			shut()
+		// 其他消息全部转发给观察者
+		if needSend {
+			fpsSubject.Send(ev)
 		}
 	}
 
-}
-
-func shut() {
-RAND:
-	shut := rand.Intn(*maxShut)
-	if shut < *minShut {
-		goto RAND
-	}
-
-	for i := 0; i < shut; i++ {
-		robotgo.Click()
-	RandSleep: // 随机暂停时间
-
-		sleep := rand.Intn(*maxSleep)
-		if sleep < *minSleep {
-			goto RandSleep
-		}
-		robotgo.MicroSleep(float64(sleep))
-	}
 }
