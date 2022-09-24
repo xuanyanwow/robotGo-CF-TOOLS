@@ -49,6 +49,8 @@ func (o *UspObserver) Receive(ev hook.Event) {
 		shut()
 	}
 }
+func (o *UspObserver) UnObserver() {
+}
 
 func shut() {
 RAND:

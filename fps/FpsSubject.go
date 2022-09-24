@@ -26,9 +26,10 @@ func (sub *FSubject) Remove(o Observer) {
 }
 
 func (sub *FSubject) Toggle(o Observer) {
-	_, ok := sub.L[o.Name()]
+	realO, ok := sub.L[o.Name()]
 	if ok {
-		delete(sub.L, o.Name())
+		realO.UnObserver()
+		delete(sub.L, realO.Name())
 	} else {
 		sub.L[o.Name()] = o
 	}
